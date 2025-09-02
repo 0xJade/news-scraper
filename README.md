@@ -43,7 +43,7 @@ A automated pipeline that scrapes blockchain news from RSS feeds, generates AI-p
 
 ### 1. **Clone & Setup**
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/0xJade/news-scraper.git
 cd news_scraper
 python3 -m venv news_scraper_env
 source news_scraper_env/bin/activate  # On Windows: news_scraper_env\Scripts\activate
