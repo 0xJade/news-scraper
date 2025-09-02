@@ -180,3 +180,4 @@ logs/
 secrets.json
 config.json
 credentials.json
+*.json
