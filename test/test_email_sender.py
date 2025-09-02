@@ -5,6 +5,9 @@ Test script for EmailSender with enhanced error handling
 
 import os
 from email_sender import EmailSender
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def test_email_sender():
     """Test the EmailSender class with various scenarios"""

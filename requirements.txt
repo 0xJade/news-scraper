@@ -1,0 +1,29 @@
+# Web3 News Scraper Dependencies
+# Core dependencies for the news scraping and AI proposal generation pipeline
+
+# Web scraping and RSS parsing
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+feedparser>=6.0.0
+
+# AI integration
+anthropic>=0.64.0
+
+# PDF generation
+reportlab>=4.0.0
+
+# Email functionality
+emails>=0.6.0
+
+# Environment variable management
+python-dotenv>=1.0.0
+
+# Date and time handling
+python-dateutil>=2.8.0
+
+# Logging and debugging
+colorama>=0.4.0
+
+# Optional: Jupyter support (if using notebooks)
+# jupyter>=1.0.0
+# ipykernel>=6.0.0
