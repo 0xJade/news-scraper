@@ -11,9 +11,9 @@ from typing import List, Dict, Optional
 from dotenv import load_dotenv
 
 # Local imports
-from blockchain_news_scraper import BlockchainNewsScraper
-from pdf_generator import generate_enhanced_news_pdf
-from email_sender import EmailSender
+from _01_blockchain_news_scraper import BlockchainNewsScraper
+from _02_pdf_generator import generate_enhanced_news_pdf
+from _03_email_sender import EmailSender
 
 # Third-party imports
 import anthropic
@@ -41,15 +41,13 @@ class NewsScraperETL:
         self.api_key = os.getenv('ANTHROPIC_API_KEY')
         self.model = os.getenv('ANTHROPIC_MODEL')
         self.email_user = os.getenv('EMAIL_USER')
-        self.email_recipient = os.getenv('EMAIL_RECIPIENTS')
 
-        print('email_user:', self.email_recipient)
-        if not self.email_recipient:
+        if not self.email_user:
             raise ValueError("EMAIL_USER environment variable is required")
     
     def _validate_environment(self) -> None:
         """Validate that all required environment variables are set"""
-        required_vars = ['ANTHROPIC_API_KEY', 'ANTHROPIC_MODEL', 'EMAIL_RECIPIENTS']
+        required_vars = ['ANTHROPIC_API_KEY', 'ANTHROPIC_MODEL', 'EMAIL_USER']
         missing_vars = [var for var in required_vars if not os.getenv(var)]
         
         if missing_vars:
@@ -194,8 +192,8 @@ class NewsScraperETL:
             return False
         
         try:
-            success = self.sender.send_simple_email(
-                to=self.email_recipient,
+            # Use default recipients from .env file
+            success = self.sender.send_to_default_recipients(
                 subject="Blockchain News Research Proposals",
                 message=(
                     "Hello! Please find attached the latest blockchain news "

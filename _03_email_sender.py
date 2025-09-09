@@ -2,6 +2,7 @@ import os
 import emails
 from typing import Optional, List, Union
 from dotenv import load_dotenv
+import ast
 
 load_dotenv()
 
@@ -48,9 +49,45 @@ class EmailSender:
                 self.use_tls = True
             else:
                 self.use_tls = tls_str.lower() == 'true'
+            
+            # Load default recipients from environment variables
+            self.default_recipients = self._parse_recipients_from_env()
                 
         except Exception as e:
             raise ValueError(f"Failed to initialize EmailSender: {str(e)}")
+    
+    def _parse_recipients_from_env(self) -> List[str]:
+        """
+        Parse recipient email addresses from environment variables.
+        Supports multiple formats:
+        - EMAIL_RECIPIENTS=email1@example.com,email2@example.com
+        - EMAIL_RECIPIENTS=email1@example.com;email2@example.com
+        - EMAIL_RECIPIENTS=email1@example.com email2@example.com
+        - EMAIL_TO=email1@example.com (single recipient)
+        
+        Returns:
+            List[str]: List of email addresses
+        """
+        recipients = []
+        
+        # Try EMAIL_RECIPIENTS first (multiple recipients)
+        recipients = ast.literal_eval(os.getenv('EMAIL_RECIPIENTS'))
+        
+        # Fallback to EMAIL_TO (single recipient)
+        if not recipients:
+            single_recipient = os.getenv('EMAIL_TO')
+            if single_recipient:
+                recipients = [single_recipient.strip()]
+        
+        # Validate email addresses
+        valid_recipients = []
+        for email in recipients:
+            if '@' in email and '.' in email:
+                valid_recipients.append(email)
+            else:
+                print(f"Warning: Invalid email format in recipients: {email}")
+        
+        return valid_recipients
     
     def send_email(
         self, 
@@ -204,12 +241,12 @@ class EmailSender:
             print(f"   Error type: {type(e).__name__}")
             return False
     
-    def send_simple_email(self, to: str, subject: str, message: str, attachments: Optional[Union[str, List[str]]] = None) -> bool:
+    def send_simple_email(self, to: Union[str, List[str]], subject: str, message: str, attachments: Optional[Union[str, List[str]]] = None) -> bool:
         """
-        Simplified method to send a plain text email to a single recipient.
+        Simplified method to send a plain text email to recipient(s).
         
         Args:
-            to: Recipient email address
+            to: Recipient email address(es) - string or list of strings
             subject: Email subject line
             message: Plain text message body
             attachments: File path(s) to attach - string or list of strings (optional)
@@ -218,6 +255,25 @@ class EmailSender:
             bool: True if email was sent successfully, False otherwise
         """
         return self.send_email(to=to, subject=subject, message=message, is_html=False, attachments=attachments)
+    
+    def send_to_default_recipients(self, subject: str, message: str, attachments: Optional[Union[str, List[str]]] = None) -> bool:
+        """
+        Send email to default recipients configured in environment variables.
+        
+        Args:
+            subject: Email subject line
+            message: Email message body
+            attachments: File path(s) to attach - string or list of strings (optional)
+            
+        Returns:
+            bool: True if email was sent successfully, False otherwise
+        """
+        if not self.default_recipients:
+            print("❌ No default recipients configured. Please set EMAIL_RECIPIENTS or EMAIL_TO in your .env file")
+            return False
+        
+        print(f"📧 Sending email to {len(self.default_recipients)} recipient(s): {', '.join(self.default_recipients)}")
+        return self.send_email(to=self.default_recipients, subject=subject, message=message, is_html=False, attachments=attachments)
     
     def test_connection(self) -> bool:
         """
